@@ -86,10 +86,7 @@ const Dashboard: React.FC = () => {
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
             Sobre este observador
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Este sistema utiliza PostgreSQL para mayor velocidad y React Query para una interfaz instantánea. 
-            El nivel de satisfacción se calcula en tiempo real.
-          </Typography>
+
           <Typography variant="body2" color="text.secondary">
             <strong>😃 Satisfecho:</strong> Más observaciones positivas que negativas.<br />
             <strong>😐 Neutral:</strong> Igual cantidad de observaciones positivas y negativas.<br />
