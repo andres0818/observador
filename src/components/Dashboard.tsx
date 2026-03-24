@@ -81,7 +81,7 @@ const Dashboard: React.FC = () => {
           }}
         >
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
-            Sobre este observador (PostgreSQL)
+            Sobre este observador
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
             Este sistema utiliza PostgreSQL para mayor velocidad y React Query para una interfaz instantánea. 

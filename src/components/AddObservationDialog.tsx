@@ -14,7 +14,7 @@ import {
   Typography,
   Box
 } from '@mui/material';
-import type { ObservationType } from '../hooks/useObservations';
+import type { ObservationType } from '../hooks/usePostgresObservations';
 
 interface AddObservationDialogProps {
   open: boolean;
