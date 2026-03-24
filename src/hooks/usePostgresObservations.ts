@@ -16,8 +16,24 @@ export interface Observation {
 export interface Member {
   id: string;
   name: string;
-  created_at?: string;
+  hasPassword?: boolean;
 }
+
+// Auth API
+export const checkUser = async (name: string) => {
+  const { data } = await axios.post(`${API_URL}/auth/check`, { name });
+  return data as Member;
+};
+
+export const setPassword = async (id: string, password: string) => {
+  const { data } = await axios.post(`${API_URL}/auth/set-password`, { id, password });
+  return data;
+};
+
+export const login = async (id: string, password: string) => {
+  const { data } = await axios.post(`${API_URL}/auth/login`, { id, password });
+  return data as Member;
+};
 
 // Hook para obtener todos los miembros
 export const useMembers = () => {

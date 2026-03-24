@@ -6,13 +6,19 @@ import MemberCard from './MemberCard';
 import AddObservationDialog from './AddObservationDialog';
 import MemberDetailsDialog from './MemberDetailsDialog';
 import AdminPanel from './AdminPanel';
-import { useObservations, useAddObservation, useMembers } from '../hooks/usePostgresObservations';
+import Login from './Login';
+import { useObservations, useAddObservation, useMembers, Member } from '../hooks/usePostgresObservations';
 import type { ObservationType } from '../hooks/usePostgresObservations';
-import { Settings as AdminIcon } from '@mui/icons-material';
+import { Settings as AdminIcon, Logout as LogoutIcon } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
 const Dashboard: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<Member | null>(() => {
+    const saved = localStorage.getItem('obs_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [filterDays, setFilterDays] = useState<number | null>(30);
   const { data: members = [], isLoading: membersLoading } = useMembers();
@@ -36,12 +42,26 @@ const Dashboard: React.FC = () => {
     setSnackbarOpen(true);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('obs_user');
+    setCurrentUser(null);
+  };
+
+  const handleLoginSuccess = (user: Member) => {
+    localStorage.setItem('obs_user', JSON.stringify(user));
+    setCurrentUser(user);
+  };
+
   const getCounts = (memberId: string) => {
     const memberObs = observations.filter(obs => obs.member_id === memberId);
     const positive = memberObs.filter(obs => obs.type === 'positive').length;
     const negative = memberObs.filter(obs => obs.type === 'negative').length;
     return { positive, negative };
   };
+
+  if (!currentUser) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
 
   if (isAdminMode) {
     return <AdminPanel onBack={() => setIsAdminMode(false)} />;
@@ -53,6 +73,15 @@ const Dashboard: React.FC = () => {
       
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
         <Box sx={{ mb: 4, textAlign: 'center', position: 'relative' }}>
+          <Tooltip title="Cerrar Sesión">
+            <IconButton 
+              sx={{ position: 'absolute', left: 0, top: 0 }}
+              onClick={handleLogout}
+            >
+              <LogoutIcon />
+            </IconButton>
+          </Tooltip>
+
           <Tooltip title="Panel de Administración">
             <IconButton 
               sx={{ position: 'absolute', right: 0, top: 0 }}
@@ -65,7 +94,7 @@ const Dashboard: React.FC = () => {
             Estado de la Célula
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Visualiza y registra el desempeño del equipo de forma objetiva y constructiva.
+            Bienvenido, <strong>{currentUser.name}</strong>. Visualiza el desempeño del equipo.
           </Typography>
         </Box>
 
