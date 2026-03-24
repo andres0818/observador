@@ -74,7 +74,7 @@ const Dashboard: React.FC = () => {
             <CircularProgress size={60} thickness={4} />
           </Box>
         ) : (
-          <Grid container spacing={4} justifyContent="center">
+          <Grid container spacing={5} justifyContent="center" sx={{ mb: 6 }}>
             {members.map((member) => {
               const { positive, negative } = getCounts(member.id);
               return (
