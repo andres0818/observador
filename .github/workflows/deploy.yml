@@ -16,17 +16,17 @@ jobs:
     - name: Checkout 🛎️
       uses: actions/checkout@v4
 
-    - name: Use Node.js 22.x
+    - name: Use Node.js 20.x
       uses: actions/setup-node@v4
       with:
-        node-version: 22.x
+        node-version: 20.x
         cache: 'npm'
 
     - name: Install Dependencies 🔧
-      run: npm ci
+      # Usamos install en lugar de ci para mayor flexibilidad con el lockfile
+      run: npm install
 
     - name: Build Frontend 🏗️
-      # Usamos la variable de entorno para que el build sepa a dónde apuntar
       run: npm run build
       env:
         VITE_API_URL: https://observador1.linapps.online/api
