@@ -4,23 +4,31 @@ import Grid from '@mui/material/Grid';
 import Header from './Header';
 import MemberCard from './MemberCard';
 import AddObservationDialog from './AddObservationDialog';
-import { useObservations, addObservation, MEMBERS } from '../hooks/useObservations';
-import type { ObservationType } from '../hooks/useObservations';
+import { useObservations, useAddObservation, MEMBERS } from '../hooks/usePostgresObservations';
+import type { ObservationType } from '../hooks/usePostgresObservations';
 
 const Dashboard: React.FC = () => {
   const [filterDays, setFilterDays] = useState<number | null>(30);
-  const { observations, loading } = useObservations(filterDays);
+  const { data: observations = [], isLoading: loading } = useObservations(filterDays);
+  const addObservationMutation = useAddObservation();
+  
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleAddObservation = async (type: ObservationType, comment: string) => {
     if (!selectedMember) return;
-    await addObservation(selectedMember.id, type, comment);
+    
+    await addObservationMutation.mutateAsync({
+      memberId: selectedMember.id,
+      type,
+      comment
+    });
+    
     setSnackbarOpen(true);
   };
 
   const getCounts = (memberId: string) => {
-    const memberObs = observations.filter(obs => obs.memberId === memberId);
+    const memberObs = observations.filter(obs => obs.member_id === memberId);
     const positive = memberObs.filter(obs => obs.type === 'positive').length;
     const negative = memberObs.filter(obs => obs.type === 'negative').length;
     return { positive, negative };
@@ -73,11 +81,11 @@ const Dashboard: React.FC = () => {
           }}
         >
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
-            Sobre este observador
+            Sobre este observador (PostgreSQL)
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Este sistema permite a los integrantes de la célula realizar anotaciones anónimas sobre el desempeño 
-            de sus compañeros. El nivel de satisfacción se calcula restando las observaciones negativas de las positivas.
+            Este sistema utiliza PostgreSQL para mayor velocidad y React Query para una interfaz instantánea. 
+            El nivel de satisfacción se calcula en tiempo real.
           </Typography>
           <Typography variant="body2" color="text.secondary">
             <strong>😃 Satisfecho:</strong> Más observaciones positivas que negativas.<br />
