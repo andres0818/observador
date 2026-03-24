@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api'; // Cambiar a la URL real cuando se despliegue
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000/api' 
+  : '/api';
 
 export type ObservationType = 'positive' | 'negative';
 
