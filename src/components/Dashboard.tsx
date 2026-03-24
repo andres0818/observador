@@ -9,9 +9,8 @@ import AdminPanel from './AdminPanel';
 import Login from './Login';
 import { useObservations, useAddObservation, useMembers } from '../hooks/usePostgresObservations';
 import type { ObservationType, Member } from '../hooks/usePostgresObservations';
-import { Settings as AdminIcon, Logout as LogoutIcon } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import { Settings as AdminIcon, Logout as LogoutIcon, Search as SearchIcon } from '@mui/icons-material';
+import { InputAdornment, TextField, IconButton, Tooltip } from '@mui/material';
 
 const Dashboard: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<Member | null>(() => {
@@ -21,6 +20,8 @@ const Dashboard: React.FC = () => {
 
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [filterDays, setFilterDays] = useState<number | null>(30);
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const { data: members = [], isLoading: membersLoading } = useMembers();
   const { data: observations = [], isLoading: obsLoading } = useObservations(filterDays);
   const addObservationMutation = useAddObservation();
@@ -98,16 +99,42 @@ const Dashboard: React.FC = () => {
           </Typography>
         </Box>
 
+        <Box sx={{ mb: 6, display: 'flex', justifyContent: 'center' }}>
+          <TextField
+            placeholder="Buscar miembro..."
+            variant="outlined"
+            size="medium"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ 
+              width: { xs: '100%', sm: 400 },
+              bgcolor: 'background.paper',
+              borderRadius: 3,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+              }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40vh' }}>
             <CircularProgress size={60} thickness={4} />
           </Box>
         ) : (
           <Grid container spacing={8} justifyContent="center" sx={{ mb: 10, px: { xs: 2, md: 4 } }}>
-            {members.map((member) => {
+            {members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).map((member) => {
               const { positive, negative } = getCounts(member.id);
               return (
-                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={member.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={member.id}>
                   <MemberCard
                     name={member.name}
                     positiveCount={positive}
@@ -119,6 +146,13 @@ const Dashboard: React.FC = () => {
                 </Grid>
               );
             })}
+            {members.length > 0 && members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+              <Box sx={{ textAlign: 'center', py: 10, width: '100%' }}>
+                <Typography variant="h6" color="text.secondary">
+                  No se encontraron miembros con "{searchTerm}"
+                </Typography>
+              </Box>
+            )}
             {members.length === 0 && (
               <Typography variant="body1" color="text.secondary" sx={{ mt: 4 }}>
                 No hay miembros registrados. Ve al panel de admin para agregar uno.

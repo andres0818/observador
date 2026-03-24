@@ -9,7 +9,8 @@ import {
   Tooltip, 
   Badge,
   useTheme,
-  alpha
+  alpha,
+  Divider
 } from '@mui/material';
 import { 
   AddCircle as AddCircleIcon, 
@@ -42,9 +43,9 @@ const MemberCard: React.FC<MemberCardProps> = ({
   const balance = positiveCount - negativeCount;
 
   const getStatusIcon = () => {
-    if (balance > 0) return <HappyIcon sx={{ fontSize: 48, color: theme.palette.success.main }} />;
-    if (balance < 0) return <SadIcon sx={{ fontSize: 48, color: theme.palette.error.main }} />;
-    return <NeutralIcon sx={{ fontSize: 48, color: theme.palette.warning.main }} />;
+    if (balance > 0) return <HappyIcon sx={{ fontSize: 40, color: theme.palette.success.main }} />;
+    if (balance < 0) return <SadIcon sx={{ fontSize: 40, color: theme.palette.error.main }} />;
+    return <NeutralIcon sx={{ fontSize: 40, color: theme.palette.warning.main }} />;
   };
 
   const getStatusText = () => {
@@ -54,9 +55,9 @@ const MemberCard: React.FC<MemberCardProps> = ({
   };
 
   const getBgColor = () => {
-    if (balance > 0) return alpha(theme.palette.success.light, 0.1);
-    if (balance < 0) return alpha(theme.palette.error.light, 0.1);
-    return alpha(theme.palette.warning.light, 0.1);
+    if (balance > 0) return alpha(theme.palette.success.light, 0.05);
+    if (balance < 0) return alpha(theme.palette.error.light, 0.05);
+    return alpha(theme.palette.warning.light, 0.05);
   };
 
   return (
@@ -65,74 +66,95 @@ const MemberCard: React.FC<MemberCardProps> = ({
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
-        position: 'relative',
-        transition: 'transform 0.2s',
+        borderRadius: 4,
+        overflow: 'hidden',
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+        border: '1px solid',
+        borderColor: 'divider',
+        transition: 'all 0.3s ease-in-out',
         '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: theme.shadows[4],
+          transform: 'translateY(-8px)',
+          boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.15)',
         },
-        bgcolor: getBgColor()
+        bgcolor: 'background.paper'
       }}
     >
-      <CardContent sx={{ flexGrow: 1, textAlign: 'center', py: 4 }}>
-        <Box sx={{ position: 'relative', display: 'inline-flex', mb: 2 }}>
+      <Box sx={{ height: 6, bgcolor: balance > 0 ? 'success.main' : balance < 0 ? 'error.main' : 'warning.main' }} />
+      
+      <CardContent sx={{ flexGrow: 1, textAlign: 'center', pt: 4, pb: 2 }}>
+        <Box sx={{ position: 'relative', display: 'inline-flex', mb: 3 }}>
           <Avatar 
             sx={{ 
-              width: 80, 
-              height: 80, 
-              bgcolor: theme.palette.primary.main,
-              boxShadow: theme.shadows[2]
+              width: 90, 
+              height: 90, 
+              bgcolor: theme.palette.mode === 'light' ? 'grey.100' : 'grey.800',
+              color: 'primary.main',
+              fontSize: 40,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
             }}
           >
-            <PersonIcon sx={{ fontSize: 40 }} />
+            <PersonIcon sx={{ fontSize: 45 }} />
           </Avatar>
           <Box 
             sx={{ 
               position: 'absolute', 
-              bottom: -10, 
-              right: -10, 
-              bgcolor: theme.palette.background.paper, 
+              bottom: -5, 
+              right: -5, 
+              bgcolor: 'background.paper', 
               borderRadius: '50%',
               display: 'flex',
-              boxShadow: theme.shadows[1]
+              p: 0.5,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}
           >
             {getStatusIcon()}
           </Box>
         </Box>
 
-        <Typography variant="h5" component="h2" gutterBottom>
+        <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-0.02em' }}>
           {name}
         </Typography>
 
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Estado: <strong>{getStatusText()}</strong>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontWeight: 500 }}>
+          Estado: <span style={{ color: balance > 0 ? theme.palette.success.main : balance < 0 ? theme.palette.error.main : theme.palette.warning.main }}>{getStatusText()}</span>
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mt: 3 }}>
-          <Tooltip title="Observaciones Positivas">
-            <Badge badgeContent={positiveCount} color="success" showZero>
-              <AddCircleIcon sx={{ color: theme.palette.success.main, fontSize: 30 }} />
-            </Badge>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: 3, 
+          bgcolor: getBgColor(),
+          py: 2,
+          borderRadius: 3,
+          mx: 2
+        }}>
+          <Tooltip title="Positivas">
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h6" color="success.main" sx={{ fontWeight: 800 }}>{positiveCount}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Pos</Typography>
+            </Box>
           </Tooltip>
-          <Tooltip title="Observaciones Negativas">
-            <Badge badgeContent={negativeCount} color="error" showZero>
-              <RemoveCircleIcon sx={{ color: theme.palette.error.main, fontSize: 30 }} />
-            </Badge>
+          <Divider orientation="vertical" flexItem sx={{ opacity: 0.5 }} />
+          <Tooltip title="Negativas">
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h6" color="error.main" sx={{ fontWeight: 800 }}>{negativeCount}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Neg</Typography>
+            </Box>
           </Tooltip>
         </Box>
       </CardContent>
 
-      <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
+      <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', gap: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: alpha(theme.palette.grey[500], 0.02) }}>
         {!isCurrentUser && (
-          <Tooltip title="Agregar observación">
+          <Tooltip title="Nueva Observación">
             <IconButton 
               color="primary" 
               onClick={onAddObservation}
               sx={{ 
-                bgcolor: theme.palette.primary.main, 
+                bgcolor: 'primary.main', 
                 color: 'white',
-                '&:hover': { bgcolor: theme.palette.primary.dark }
+                '&:hover': { bgcolor: 'primary.dark' },
+                boxShadow: '0 4px 12px rgba(63, 81, 181, 0.3)'
               }}
             >
               <AddCircleIcon />
@@ -140,7 +162,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
           </Tooltip>
         )}
 
-        <Tooltip title="Ver detalles y comentarios">
+        <Tooltip title="Ver Historial">
           <IconButton 
             onClick={onViewDetails}
             sx={{ 
