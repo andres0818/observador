@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-// En desarrollo (Vite), se usa el proxy '/api' configurado en vite.config.ts
-// En producción (GitHub Pages), se conecta directamente a la URL de linapps.online
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://observador1.linapps.online/api' : '/api');
 
 export type ObservationType = 'positive' | 'negative';
@@ -15,42 +13,86 @@ export interface Observation {
   created_at: string;
 }
 
-export const MEMBERS = [
-  { id: 'la_ratica99', name: 'la ratica99' },
-  { id: 'ferilo12', name: 'ferilo12' },
-  { id: 'derek', name: 'Derek' },
-  { id: 'andres', name: 'Andrés' },
-];
+export interface Member {
+  id: string;
+  name: string;
+  created_at?: string;
+}
 
-export const useObservations = (filterDays: number | null) => {
+// Hook para obtener todos los miembros
+export const useMembers = () => {
   return useQuery({
-    queryKey: ['observations', filterDays],
+    queryKey: ['members'],
     queryFn: async () => {
-      const { data } = await axios.get(`${API_URL}/observations`, {
-        params: { days: filterDays === null ? 'all' : filterDays }
-      });
-      return data as Observation[];
-    },
-    staleTime: 30000, // Los datos se consideran frescos por 30 segundos
-    refetchInterval: 60000, // Recarga automática cada minuto para mantener fluidez
+      const { data } = await axios.get(`${API_URL}/members`);
+      return data as Member[];
+    }
   });
 };
 
-export const useAddObservation = () => {
+// Hook para añadir un miembro
+export const useAddMember = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ memberId, type, comment }: { memberId: string, type: ObservationType, comment?: string }) => {
-      const { data } = await axios.post(`${API_URL}/observations`, {
-        memberId,
-        type,
-        comment
-      });
+    mutationFn: async (member: { id: string; name: string }) => {
+      const { data } = await axios.post(`${API_URL}/members`, member);
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['members'] })
+  });
+};
+
+// Hook para eliminar un miembro
+export const useDeleteMember = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await axios.delete(`${API_URL}/members/${id}`);
       return data;
     },
     onSuccess: () => {
-      // Invalida la caché para refrescar los datos de inmediato
+      queryClient.invalidateQueries({ queryKey: ['members'] });
       queryClient.invalidateQueries({ queryKey: ['observations'] });
     }
+  });
+};
+
+// Hook para obtener observaciones
+export const useObservations = (filterDays: number | null, memberId?: string) => {
+  return useQuery({
+    queryKey: ['observations', filterDays, memberId],
+    queryFn: async () => {
+      const { data } = await axios.get(`${API_URL}/observations`, {
+        params: { 
+          days: filterDays === null ? 'all' : filterDays,
+          memberId 
+        }
+      });
+      return data as Observation[];
+    }
+  });
+};
+
+// Hook para añadir observación
+export const useAddObservation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ memberId, type, comment }: { memberId: string, type: ObservationType, comment?: string }) => {
+      const { data } = await axios.post(`${API_URL}/observations`, { memberId, type, comment });
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['observations'] })
+  });
+};
+
+// Hook para eliminar observación
+export const useDeleteObservation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await axios.delete(`${API_URL}/observations/${id}`);
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['observations'] })
   });
 };

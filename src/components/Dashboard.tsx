@@ -5,14 +5,21 @@ import Header from './Header';
 import MemberCard from './MemberCard';
 import AddObservationDialog from './AddObservationDialog';
 import MemberDetailsDialog from './MemberDetailsDialog';
-import { useObservations, useAddObservation, MEMBERS } from '../hooks/usePostgresObservations';
+import AdminPanel from './AdminPanel';
+import { useObservations, useAddObservation, useMembers } from '../hooks/usePostgresObservations';
 import type { ObservationType } from '../hooks/usePostgresObservations';
+import { Settings as AdminIcon } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 
 const Dashboard: React.FC = () => {
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const [filterDays, setFilterDays] = useState<number | null>(30);
-  const { data: observations = [], isLoading: loading } = useObservations(filterDays);
+  const { data: members = [], isLoading: membersLoading } = useMembers();
+  const { data: observations = [], isLoading: obsLoading } = useObservations(filterDays);
   const addObservationMutation = useAddObservation();
   
+  const loading = membersLoading || obsLoading;
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
   const [viewDetailsMember, setViewDetailsMember] = useState<{ id: string; name: string } | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -36,12 +43,24 @@ const Dashboard: React.FC = () => {
     return { positive, negative };
   };
 
+  if (isAdminMode) {
+    return <AdminPanel onBack={() => setIsAdminMode(false)} />;
+  }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header filterDays={filterDays} onFilterChange={setFilterDays} />
       
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
+        <Box sx={{ mb: 4, textAlign: 'center', position: 'relative' }}>
+          <Tooltip title="Panel de Administración">
+            <IconButton 
+              sx={{ position: 'absolute', right: 0, top: 0 }}
+              onClick={() => setIsAdminMode(true)}
+            >
+              <AdminIcon />
+            </IconButton>
+          </Tooltip>
           <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 800, color: 'primary.main' }}>
             Estado de la Célula
           </Typography>
@@ -56,7 +75,7 @@ const Dashboard: React.FC = () => {
           </Box>
         ) : (
           <Grid container spacing={4} justifyContent="center">
-            {MEMBERS.map((member) => {
+            {members.map((member) => {
               const { positive, negative } = getCounts(member.id);
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 3 }} key={member.id}>
@@ -70,6 +89,11 @@ const Dashboard: React.FC = () => {
                 </Grid>
               );
             })}
+            {members.length === 0 && (
+              <Typography variant="body1" color="text.secondary" sx={{ mt: 4 }}>
+                No hay miembros registrados. Ve al panel de admin para agregar uno.
+              </Typography>
+            )}
           </Grid>
         )}
 
