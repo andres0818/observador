@@ -27,6 +27,7 @@ interface MemberCardProps {
   negativeCount: number;
   onAddObservation: () => void;
   onViewDetails: () => void;
+  isCurrentUser?: boolean;
 }
 
 const MemberCard: React.FC<MemberCardProps> = ({ 
@@ -34,7 +35,8 @@ const MemberCard: React.FC<MemberCardProps> = ({
   positiveCount, 
   negativeCount, 
   onAddObservation,
-  onViewDetails
+  onViewDetails,
+  isCurrentUser = false
 }) => {
   const theme = useTheme();
   const balance = positiveCount - negativeCount;
@@ -122,19 +124,21 @@ const MemberCard: React.FC<MemberCardProps> = ({
       </CardContent>
 
       <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
-        <Tooltip title="Agregar observación">
-          <IconButton 
-            color="primary" 
-            onClick={onAddObservation}
-            sx={{ 
-              bgcolor: theme.palette.primary.main, 
-              color: 'white',
-              '&:hover': { bgcolor: theme.palette.primary.dark }
-            }}
-          >
-            <AddCircleIcon />
-          </IconButton>
-        </Tooltip>
+        {!isCurrentUser && (
+          <Tooltip title="Agregar observación">
+            <IconButton 
+              color="primary" 
+              onClick={onAddObservation}
+              sx={{ 
+                bgcolor: theme.palette.primary.main, 
+                color: 'white',
+                '&:hover': { bgcolor: theme.palette.primary.dark }
+              }}
+            >
+              <AddCircleIcon />
+            </IconButton>
+          </Tooltip>
+        )}
 
         <Tooltip title="Ver detalles y comentarios">
           <IconButton 

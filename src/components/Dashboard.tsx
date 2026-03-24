@@ -7,8 +7,8 @@ import AddObservationDialog from './AddObservationDialog';
 import MemberDetailsDialog from './MemberDetailsDialog';
 import AdminPanel from './AdminPanel';
 import Login from './Login';
-import { useObservations, useAddObservation, useMembers, Member } from '../hooks/usePostgresObservations';
-import type { ObservationType } from '../hooks/usePostgresObservations';
+import { useObservations, useAddObservation, useMembers } from '../hooks/usePostgresObservations';
+import type { ObservationType, Member } from '../hooks/usePostgresObservations';
 import { Settings as AdminIcon, Logout as LogoutIcon } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -103,7 +103,7 @@ const Dashboard: React.FC = () => {
             <CircularProgress size={60} thickness={4} />
           </Box>
         ) : (
-          <Grid container spacing={5} justifyContent="center" sx={{ mb: 6 }}>
+          <Grid container spacing={8} justifyContent="center" sx={{ mb: 10, px: { xs: 2, md: 4 } }}>
             {members.map((member) => {
               const { positive, negative } = getCounts(member.id);
               return (
@@ -114,6 +114,7 @@ const Dashboard: React.FC = () => {
                     negativeCount={negative}
                     onAddObservation={() => setSelectedMember(member)}
                     onViewDetails={() => setViewDetailsMember(member)}
+                    isCurrentUser={member.id === currentUser.id}
                   />
                 </Grid>
               );

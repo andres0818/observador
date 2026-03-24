@@ -8,7 +8,8 @@ import {
   Visibility as ViewIcon, VisibilityOff as HideIcon, 
   Login as LoginIcon, VpnKey as KeyIcon 
 } from '@mui/icons-material';
-import { checkUser, setPassword as setPassApi, login as loginApi, Member } from '../hooks/usePostgresObservations';
+import { checkUser, setPassword as setPassApi, login as loginApi } from '../hooks/usePostgresObservations';
+import type { Member } from '../hooks/usePostgresObservations';
 
 interface LoginProps {
   onLoginSuccess: (user: Member) => void;
