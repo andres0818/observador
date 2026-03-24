@@ -27,7 +27,9 @@ jobs:
       run: npm install
 
     - name: Build Frontend 🏗️
-      run: npm run build
+      run: |
+        npm run build
+        cp dist/index.html dist/404.html
       env:
         VITE_API_URL: https://observador1.linapps.online/api
 
