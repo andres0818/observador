@@ -4,6 +4,7 @@ import Grid from '@mui/material/Grid';
 import Header from './Header';
 import MemberCard from './MemberCard';
 import AddObservationDialog from './AddObservationDialog';
+import MemberDetailsDialog from './MemberDetailsDialog';
 import { useObservations, useAddObservation, MEMBERS } from '../hooks/usePostgresObservations';
 import type { ObservationType } from '../hooks/usePostgresObservations';
 
@@ -13,6 +14,7 @@ const Dashboard: React.FC = () => {
   const addObservationMutation = useAddObservation();
   
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+  const [viewDetailsMember, setViewDetailsMember] = useState<{ id: string; name: string } | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleAddObservation = async (type: ObservationType, comment: string) => {
@@ -63,6 +65,7 @@ const Dashboard: React.FC = () => {
                     positiveCount={positive}
                     negativeCount={negative}
                     onAddObservation={() => setSelectedMember(member)}
+                    onViewDetails={() => setViewDetailsMember(member)}
                   />
                 </Grid>
               );
@@ -100,6 +103,13 @@ const Dashboard: React.FC = () => {
         onClose={() => setSelectedMember(null)}
         memberName={selectedMember?.name || ''}
         onConfirm={handleAddObservation}
+      />
+
+      <MemberDetailsDialog
+        open={!!viewDetailsMember}
+        onClose={() => setViewDetailsMember(null)}
+        memberName={viewDetailsMember?.name || ''}
+        observations={observations.filter(obs => obs.member_id === viewDetailsMember?.id)}
       />
 
       <Snackbar 

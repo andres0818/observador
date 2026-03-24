@@ -17,7 +17,8 @@ import {
   SentimentVerySatisfied as HappyIcon,
   SentimentNeutral as NeutralIcon,
   SentimentVeryDissatisfied as SadIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  FormatListBulleted as ListIcon
 } from '@mui/icons-material';
 
 interface MemberCardProps {
@@ -25,13 +26,15 @@ interface MemberCardProps {
   positiveCount: number;
   negativeCount: number;
   onAddObservation: () => void;
+  onViewDetails: () => void;
 }
 
 const MemberCard: React.FC<MemberCardProps> = ({ 
   name, 
   positiveCount, 
   negativeCount, 
-  onAddObservation 
+  onAddObservation,
+  onViewDetails
 }) => {
   const theme = useTheme();
   const balance = positiveCount - negativeCount;
@@ -118,7 +121,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
         </Box>
       </CardContent>
 
-      <Box sx={{ p: 2, textAlign: 'center' }}>
+      <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
         <Tooltip title="Agregar observación">
           <IconButton 
             color="primary" 
@@ -130,6 +133,21 @@ const MemberCard: React.FC<MemberCardProps> = ({
             }}
           >
             <AddCircleIcon />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Ver detalles y comentarios">
+          <IconButton 
+            onClick={onViewDetails}
+            sx={{ 
+              bgcolor: 'background.paper',
+              color: 'text.secondary',
+              border: '1px solid',
+              borderColor: 'divider',
+              '&:hover': { bgcolor: 'action.hover' }
+            }}
+          >
+            <ListIcon />
           </IconButton>
         </Tooltip>
       </Box>
