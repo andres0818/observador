@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Container, Box, Typography, CircularProgress, Paper, Snackbar, Alert } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { Container, Box, Typography, CircularProgress, Paper, Snackbar, Alert, Grid, TextField, InputAdornment, IconButton, Tooltip } from '@mui/material';
 import Header from './Header';
 import MemberCard from './MemberCard';
 import AddObservationDialog from './AddObservationDialog';
@@ -10,7 +9,6 @@ import Login from './Login';
 import { useObservations, useAddObservation, useMembers } from '../hooks/usePostgresObservations';
 import type { ObservationType, Member } from '../hooks/usePostgresObservations';
 import { Settings as AdminIcon, Logout as LogoutIcon, Search as SearchIcon } from '@mui/icons-material';
-import { InputAdornment, TextField, IconButton, Tooltip } from '@mui/material';
 
 const Dashboard: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<Member | null>(() => {
@@ -33,13 +31,7 @@ const Dashboard: React.FC = () => {
 
   const handleAddObservation = async (type: ObservationType, comment: string) => {
     if (!selectedMember) return;
-    
-    await addObservationMutation.mutateAsync({
-      memberId: selectedMember.id,
-      type,
-      comment
-    });
-    
+    await addObservationMutation.mutateAsync({ memberId: selectedMember.id, type, comment });
     setSnackbarOpen(true);
   };
 
@@ -60,81 +52,72 @@ const Dashboard: React.FC = () => {
     return { positive, negative };
   };
 
-  if (!currentUser) {
-    return <Login onLoginSuccess={handleLoginSuccess} />;
-  }
+  if (!currentUser) return <Login onLoginSuccess={handleLoginSuccess} />;
+  if (isAdminMode) return <AdminPanel onBack={() => setIsAdminMode(false)} />;
 
-  if (isAdminMode) {
-    return <AdminPanel onBack={() => setIsAdminMode(false)} />;
-  }
+  const filteredMembers = members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
       <Header filterDays={filterDays} onFilterChange={setFilterDays} />
       
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
-        <Box sx={{ mb: 4, textAlign: 'center', position: 'relative' }}>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        {/* Encabezado con botones */}
+        <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Tooltip title="Cerrar Sesión">
-            <IconButton 
-              sx={{ position: 'absolute', left: 0, top: 0 }}
-              onClick={handleLogout}
-            >
+            <IconButton onClick={handleLogout} color="error" sx={{ bgcolor: 'background.paper', boxShadow: 1 }}>
               <LogoutIcon />
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Panel de Administración">
-            <IconButton 
-              sx={{ position: 'absolute', right: 0, top: 0 }}
-              onClick={() => setIsAdminMode(true)}
-            >
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: 'primary.main', mb: 1 }}>
+              Estado de la Célula
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Hola, <strong>{currentUser.name}</strong>. Gestiona tu equipo.
+            </Typography>
+          </Box>
+
+          <Tooltip title="Administración">
+            <IconButton onClick={() => setIsAdminMode(true)} color="primary" sx={{ bgcolor: 'background.paper', boxShadow: 1 }}>
               <AdminIcon />
             </IconButton>
           </Tooltip>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 800, color: 'primary.main' }}>
-            Estado de la Célula
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Bienvenido, <strong>{currentUser.name}</strong>. Visualiza el desempeño del equipo.
-          </Typography>
         </Box>
 
-        <Box sx={{ mb: 6, display: 'flex', justifyContent: 'center' }}>
+        {/* Buscador - Con margen asegurado */}
+        <Box sx={{ mb: 8, display: 'flex', justifyContent: 'center' }}>
           <TextField
-            placeholder="Buscar miembro..."
+            placeholder="Buscar por nombre..."
             variant="outlined"
-            size="medium"
+            fullWidth
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ 
-              width: { xs: '100%', sm: 400 },
+              maxWidth: 500,
               bgcolor: 'background.paper',
-              borderRadius: 3,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 3,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-              }
+              '& .MuiOutlinedInput-root': { borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }
             }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon color="action" />
+                  <SearchIcon color="primary" />
                 </InputAdornment>
               ),
             }}
           />
         </Box>
 
+        {/* Rejilla de Tarjetas - Corregida para evitar superposición */}
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40vh' }}>
-            <CircularProgress size={60} thickness={4} />
-          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress size={60} /></Box>
         ) : (
-          <Grid container spacing={8} justifyContent="center" sx={{ mb: 10, px: { xs: 2, md: 4 } }}>
-            {members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).map((member) => {
+          <Grid container spacing={4}>
+            {filteredMembers.map((member) => {
               const { positive, negative } = getCounts(member.id);
               return (
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={member.id}>
+                <Grid item xs={12} sm={6} md={4} lg={3} key={member.id}>
                   <MemberCard
                     name={member.name}
                     positiveCount={positive}
@@ -146,41 +129,26 @@ const Dashboard: React.FC = () => {
                 </Grid>
               );
             })}
-            {members.length > 0 && members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-              <Box sx={{ textAlign: 'center', py: 10, width: '100%' }}>
-                <Typography variant="h6" color="text.secondary">
-                  No se encontraron miembros con "{searchTerm}"
-                </Typography>
-              </Box>
-            )}
-            {members.length === 0 && (
-              <Typography variant="body1" color="text.secondary" sx={{ mt: 4 }}>
-                No hay miembros registrados. Ve al panel de admin para agregar uno.
-              </Typography>
-            )}
           </Grid>
         )}
 
-        <Paper 
-          sx={{ 
-            mt: 6, 
-            p: 3, 
-            borderRadius: 4, 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider'
-          }}
-        >
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
-            Sobre este observador
-          </Typography>
-
-          <Typography variant="body2" color="text.secondary">
-            <strong>😃 Satisfecho:</strong> Más observaciones positivas que negativas.<br />
-            <strong>😐 Neutral:</strong> Igual cantidad de observaciones positivas y negativas.<br />
-            <strong>☹️ Inconforme:</strong> Más observaciones negativas que positivas.
-          </Typography>
-        </Paper>
+        {/* Info Footer */}
+        {!loading && filteredMembers.length > 0 && (
+          <Paper sx={{ mt: 10, p: 4, borderRadius: 5, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>Leyenda de Estados</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2"><strong>😃 Satisfecho:</strong> Balance Positivo</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2"><strong>😐 Neutral:</strong> Balance Cero</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2"><strong>☹️ Inconforme:</strong> Balance Negativo</Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+        )}
       </Container>
 
       <AddObservationDialog
@@ -197,15 +165,8 @@ const Dashboard: React.FC = () => {
         observations={observations.filter(obs => obs.member_id === viewDetailsMember?.id)}
       />
 
-      <Snackbar 
-        open={snackbarOpen} 
-        autoHideDuration={4000} 
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-          Observación registrada con éxito
-        </Alert>
+      <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={() => setSnackbarOpen(false)}>
+        <Alert severity="success" variant="filled">Observación guardada con éxito</Alert>
       </Snackbar>
     </Box>
   );
