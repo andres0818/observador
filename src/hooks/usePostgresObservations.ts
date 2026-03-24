@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-const API_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3000/api' 
-  : '/api';
+// En desarrollo (Vite), se usa el proxy '/api' configurado en vite.config.ts
+// En producción (GitHub Pages), se conecta directamente a la URL de linapps.online
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://observador1.linapps.online/api' : '/api');
 
 export type ObservationType = 'positive' | 'negative';
 
